@@ -1,1 +1,13 @@
-/.venv
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# App config/cache (user-specific)
+.steam_api_app/

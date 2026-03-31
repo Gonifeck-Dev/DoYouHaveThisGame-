@@ -188,6 +188,43 @@ class SteamApiClient:
             include_api_key=False,
         )
 
+    def get_owned_games(
+        self,
+        steamid: str,
+        include_appinfo: bool = True,
+        include_played_free_games: bool = True,
+    ) -> Dict[str, Any]:
+        """Get all games owned by a Steam user. Profile must be public."""
+        return self.request(
+            interface="IPlayerService",
+            method_name="GetOwnedGames",
+            version="v1",
+            params={
+                "steamid": steamid,
+                "include_appinfo": int(include_appinfo),
+                "include_played_free_games": int(include_played_free_games),
+            },
+            http_method="GET",
+        )
+
+    def get_steamspy_app_details(self, appid: str) -> Dict[str, Any]:
+        """Fetch app details from SteamSpy (no auth required). Returns 'tags' as {tag: votes}."""
+        url = "https://steamspy.com/api.php"
+        try:
+            response = self.session.get(
+                url,
+                params={"request": "appdetails", "appid": appid},
+                timeout=self.timeout,
+            )
+        except requests.RequestException as exc:
+            raise SteamApiError(f"SteamSpy request error for appid {appid}: {exc}") from exc
+        if not response.ok:
+            raise SteamApiError(f"SteamSpy error {response.status_code} for appid {appid}")
+        try:
+            return response.json()
+        except ValueError as exc:
+            raise SteamApiError(f"Non-JSON SteamSpy response for appid {appid}") from exc
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
